@@ -1,0 +1,56 @@
+{
+  "name": "bokle",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:studio": "prisma studio"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.9.1",
+    "@prisma/client": "^6.19.3",
+    "@react-pdf/renderer": "^4.9.0",
+    "@tanstack/react-query": "^5.104.1",
+    "bcryptjs": "^3.0.3",
+    "bullmq": "^6.3.11",
+    "class-variance-authority": "^0.7.1",
+    "cloudinary": "^2.11.0",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.4.0",
+    "ioredis": "^6.0.0",
+    "jose": "^6.2.12",
+    "jsonwebtoken": "^9.0.3",
+    "lucide-react": "^1.52.0",
+    "nanoid": "^5.1.16",
+    "next": "14.2.35",
+    "prisma": "^6.19.3",
+    "pusher": "^5.3.4",
+    "pusher-js": "^8.6.0",
+    "react": "^18",
+    "react-dom": "^18",
+    "react-hook-form": "^7.89.0",
+    "recharts": "^3.10.1",
+    "resend": "^6.32.1",
+    "tailwind-merge": "^3.7.0",
+    "zod": "^4.6.5",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.35",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "tsx": "^4.23.15",
+    "typescript": "^5"
+  }
+}

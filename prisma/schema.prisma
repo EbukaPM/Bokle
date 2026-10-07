@@ -1,0 +1,603 @@
+// Bokle — Prisma schema
+// Mirrors PRD Section 9 (Database Schema). PostgreSQL-specific types
+// (arrays, Decimal, Json) are used to match the SQL spec exactly.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════
+// ENUMS
+// ═══════════════════════════════════════════
+
+enum MembershipTier {
+  free
+  premium
+}
+
+enum SubscriptionPlanType {
+  monthly
+  quarterly
+  annual
+}
+
+enum SubscriptionStatus {
+  active
+  cancelled
+  expired
+}
+
+enum CategoryType {
+  general
+  check_am
+}
+
+enum VerificationStatus {
+  pending
+  approved
+  rejected
+}
+
+enum SubjectType {
+  person
+  property
+  vehicle
+  other
+}
+
+enum RequestType {
+  general
+  check_am
+}
+
+enum RecurrencePattern {
+  daily
+  weekly
+  monthly
+}
+
+enum RequestStatus {
+  open
+  matched
+  accepted
+  en_route
+  on_site
+  completed
+  report_submitted
+  confirmed
+  disputed
+  cancelled
+  refunded
+}
+
+enum ReportType {
+  general
+  check_am
+}
+
+enum ReviewerRole {
+  client
+  provider
+}
+
+enum WalletTransactionType {
+  topup
+  subscription
+  payment
+  escrow_hold
+  escrow_release
+  commission
+  payout
+  refund
+  earned
+}
+
+enum WalletTransactionStatus {
+  success
+  pending
+  failed
+}
+
+enum WithdrawalStatus {
+  pending
+  approved
+  processing
+  completed
+  failed
+}
+
+enum DisputeStatus {
+  open
+  under_review
+  resolved_for_client
+  resolved_for_provider
+  closed
+}
+
+// ═══════════════════════════════════════════
+// USERS
+// ═══════════════════════════════════════════
+
+model User {
+  id                 String    @id @default(uuid())
+  fullName           String    @map("full_name")
+  email              String?   @unique
+  phone              String?   @unique
+  passwordHash       String?   @map("password_hash")
+  avatarUrl          String?   @map("avatar_url")
+  bio                String?
+  state              String?
+  lga                String?
+  neighbourhood      String?
+  isEmailVerified    Boolean   @default(false) @map("is_email_verified")
+  isPhoneVerified    Boolean   @default(false) @map("is_phone_verified")
+  isProviderActive   Boolean   @default(false) @map("is_provider_active")
+  providerVerified   Boolean   @default(false) @map("provider_verified")
+  isAdmin            Boolean   @default(false) @map("is_admin")
+  isSuperAdmin       Boolean   @default(false) @map("is_super_admin")
+  isSuspended        Boolean   @default(false) @map("is_suspended")
+  membershipTier     MembershipTier @default(free) @map("membership_tier")
+  premiumExpiresAt   DateTime? @map("premium_expires_at")
+  totpSecret         String?   @map("totp_secret")
+
+  // Paystack Dedicated Virtual Account — bank-transfer wallet top-up (PRD P1).
+  paystackCustomerCode String? @map("paystack_customer_code")
+  dvaAccountNumber     String? @map("dva_account_number")
+  dvaBankName          String? @map("dva_bank_name")
+  dvaAccountName       String? @map("dva_account_name")
+
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  subscriptions      Subscription[]
+  providerProfile    ProviderProfile?
+  savedSubjects      SavedSubject[]
+  serviceRequests    ServiceRequest[]   @relation("ClientRequests")
+  reviewsGiven       Review[]           @relation("ReviewsGiven")
+  reviewsReceived    Review[]           @relation("ReviewsReceived")
+  wallet             Wallet?
+  bankAccounts       BankAccount[]
+  withdrawalRequests WithdrawalRequest[]
+  disputesRaised     Dispute[]          @relation("DisputesRaised")
+  disputesResolved   Dispute[]          @relation("DisputesResolved")
+  messagesSent       Message[]
+  notifications      Notification[]
+  adminAuditLogs     AdminAuditLog[]
+  settingsUpdated    PlatformSetting[]
+
+  @@map("users")
+}
+
+// ═══════════════════════════════════════════
+// PREMIUM SUBSCRIPTIONS
+// ═══════════════════════════════════════════
+
+model Subscription {
+  id              String               @id @default(uuid())
+  userId          String               @map("user_id")
+  user            User                 @relation(fields: [userId], references: [id])
+  planType        SubscriptionPlanType @map("plan_type")
+  amountPaid      Decimal              @map("amount_paid") @db.Decimal(12, 2)
+  currency        String               @default("NGN")
+  paystackSubCode String?              @map("paystack_sub_code")
+  paystackRef     String?              @map("paystack_ref")
+  status          SubscriptionStatus   @default(active)
+  startedAt       DateTime             @default(now()) @map("started_at")
+  expiresAt       DateTime             @map("expires_at")
+  cancelledAt     DateTime?            @map("cancelled_at")
+  createdAt       DateTime             @default(now()) @map("created_at")
+
+  walletTransactions WalletTransaction[]
+
+  @@map("subscriptions")
+}
+
+// ═══════════════════════════════════════════
+// SERVICE CATEGORIES
+// ═══════════════════════════════════════════
+
+model ServiceCategory {
+  id                  String       @id @default(uuid())
+  type                CategoryType
+  name                String
+  description         String?
+  iconName             String?     @map("icon_name")
+  baseFee             Decimal      @default(0) @map("base_fee") @db.Decimal(10, 2)
+  proximityRadiusKm   Int          @default(20) @map("proximity_radius_km")
+  minPhotosRequired   Int          @default(3) @map("min_photos_required")
+  checklistTemplate   Json?        @map("checklist_template")
+  isActive            Boolean      @default(true) @map("is_active")
+  createdAt           DateTime     @default(now()) @map("created_at")
+  updatedAt           DateTime     @updatedAt @map("updated_at")
+
+  providerCategories  ProviderCategory[]
+  serviceRequests     ServiceRequest[]
+
+  @@map("service_categories")
+}
+
+// ═══════════════════════════════════════════
+// PLATFORM SETTINGS (admin-controlled)
+// ═══════════════════════════════════════════
+
+model PlatformSetting {
+  key         String   @id
+  value       String
+  description String?
+  updatedBy   String?  @map("updated_by")
+  updatedByUser User?  @relation(fields: [updatedBy], references: [id])
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("platform_settings")
+}
+
+// ═══════════════════════════════════════════
+// PROVIDER PROFILES
+// ═══════════════════════════════════════════
+
+model ProviderProfile {
+  id                  String              @id @default(uuid())
+  userId              String              @unique @map("user_id")
+  user                User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  verificationStatus  VerificationStatus  @default(pending) @map("verification_status")
+  idDocumentUrl       String?             @map("id_document_url")
+  selfieUrl           String?             @map("selfie_url")
+  adminNotes          String?             @map("admin_notes")
+  verifiedAt          DateTime?           @map("verified_at")
+  hourlyRate          Decimal?            @map("hourly_rate") @db.Decimal(10, 2)
+  perVisitRate        Decimal?            @map("per_visit_rate") @db.Decimal(10, 2)
+  coverageRadiusKm    Int                 @default(10) @map("coverage_radius_km")
+  acceptsCheckAm      Boolean             @default(true) @map("accepts_check_am")
+  avgRating           Decimal             @default(0) @map("avg_rating") @db.Decimal(3, 2)
+  totalReviews        Int                 @default(0) @map("total_reviews")
+  totalJobs           Int                 @default(0) @map("total_jobs")
+  responseRate        Decimal             @default(0) @map("response_rate") @db.Decimal(5, 2)
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+
+  categories          ProviderCategory[]
+  availability        ProviderAvailability[]
+  assignedRequests    ServiceRequest[]
+  reports             Report[]
+
+  @@map("provider_profiles")
+}
+
+model ProviderCategory {
+  providerId String          @map("provider_id")
+  provider   ProviderProfile @relation(fields: [providerId], references: [id])
+  categoryId String          @map("category_id")
+  category   ServiceCategory @relation(fields: [categoryId], references: [id])
+
+  @@id([providerId, categoryId])
+  @@map("provider_categories")
+}
+
+model ProviderAvailability {
+  id         String          @id @default(uuid())
+  providerId String          @map("provider_id")
+  provider   ProviderProfile @relation(fields: [providerId], references: [id])
+  dayOfWeek  Int             @map("day_of_week")
+  startTime  String          @map("start_time") // stored HH:mm
+  endTime    String          @map("end_time")
+
+  @@map("provider_availability")
+}
+
+// ═══════════════════════════════════════════
+// CARE RECIPIENTS / SAVED LOCATIONS
+// ═══════════════════════════════════════════
+
+model SavedSubject {
+  id           String      @id @default(uuid())
+  clientId     String      @map("client_id")
+  client       User        @relation(fields: [clientId], references: [id])
+  label        String?
+  subjectType  SubjectType @map("subject_type")
+  name         String?
+  relationship String?
+  phone        String?
+  address      String?
+  state        String?
+  lga          String?
+  notes        String?
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  serviceRequests ServiceRequest[]
+
+  @@map("saved_subjects")
+}
+
+// ═══════════════════════════════════════════
+// SERVICE REQUESTS (General + Check Am)
+// ═══════════════════════════════════════════
+
+model ServiceRequest {
+  id        String          @id @default(uuid())
+  clientId  String          @map("client_id")
+  client    User            @relation("ClientRequests", fields: [clientId], references: [id])
+  categoryId String         @map("category_id")
+  category  ServiceCategory @relation(fields: [categoryId], references: [id])
+  requestType RequestType   @map("request_type")
+
+  subjectId           String?       @map("subject_id")
+  subject             SavedSubject? @relation(fields: [subjectId], references: [id])
+  subjectDescription  String?       @map("subject_description")
+  clientQuestions     String[]      @map("client_questions")
+
+  serviceAddress String   @map("service_address")
+  serviceState   String?  @map("service_state")
+  serviceLga     String?  @map("service_lga")
+  lat            Decimal? @db.Decimal(9, 6)
+  lng            Decimal? @db.Decimal(9, 6)
+
+  preferredDate       DateTime           @map("preferred_date")
+  preferredTime       String?            @map("preferred_time")
+  reportDeadline      DateTime?          @map("report_deadline")
+  isRecurring         Boolean            @default(false) @map("is_recurring")
+  recurrencePattern   RecurrencePattern? @map("recurrence_pattern")
+  recurringParentId   String?            @map("recurring_parent_id")
+  recurringParent     ServiceRequest?    @relation("RecurringChain", fields: [recurringParentId], references: [id])
+  recurringChildren   ServiceRequest[]   @relation("RecurringChain")
+
+  specialInstructions String?  @map("special_instructions")
+  referenceFileUrls   String[] @map("reference_file_urls")
+
+  quotedPrice     Decimal? @map("quoted_price") @db.Decimal(10, 2)
+  platformFee     Decimal? @map("platform_fee") @db.Decimal(10, 2)
+  providerPayout  Decimal? @map("provider_payout") @db.Decimal(10, 2)
+
+  status RequestStatus @default(open)
+
+  assignedProviderId String?          @map("assigned_provider_id")
+  assignedProvider   ProviderProfile? @relation(fields: [assignedProviderId], references: [id])
+  matchedAt          DateTime?        @map("matched_at")
+  acceptedAt         DateTime?        @map("accepted_at")
+  completedAt        DateTime?        @map("completed_at")
+  confirmedAt         DateTime?       @map("confirmed_at")
+  createdAt           DateTime        @default(now()) @map("created_at")
+  updatedAt           DateTime        @updatedAt @map("updated_at")
+
+  reports             Report[]
+  reviews             Review[]
+  disputes            Dispute[]
+  messages            Message[]
+  walletTransactions  WalletTransaction[]
+
+  @@map("service_requests")
+}
+
+// ═══════════════════════════════════════════
+// VISIT / CHECK AM REPORTS
+// ═══════════════════════════════════════════
+
+model Report {
+  id              String          @id @default(uuid())
+  requestId       String          @map("request_id")
+  request         ServiceRequest  @relation(fields: [requestId], references: [id])
+  providerId      String          @map("provider_id")
+  provider        ProviderProfile @relation(fields: [providerId], references: [id])
+
+  reportType      ReportType      @map("report_type")
+  arrivalTime     DateTime?       @map("arrival_time")
+  completionTime  DateTime?       @map("completion_time")
+
+  checklistData           Json?   @map("checklist_data")
+  clientQuestionsAnswers  Json?   @map("client_questions_answers")
+  notes                   String?
+  photoUrls               String[] @map("photo_urls")
+  isConcernFlagged        Boolean  @default(false) @map("is_concern_flagged")
+  concernNotes             String? @map("concern_notes")
+  overallAssessment        String? @map("overall_assessment")
+
+  submittedAt DateTime @default(now()) @map("submitted_at")
+
+  @@map("reports")
+}
+
+// ═══════════════════════════════════════════
+// RATINGS & REVIEWS
+// ═══════════════════════════════════════════
+
+model Review {
+  id           String         @id @default(uuid())
+  requestId    String         @map("request_id")
+  request      ServiceRequest @relation(fields: [requestId], references: [id])
+  reviewerId   String         @map("reviewer_id")
+  reviewer     User           @relation("ReviewsGiven", fields: [reviewerId], references: [id])
+  revieweeId   String         @map("reviewee_id")
+  reviewee     User           @relation("ReviewsReceived", fields: [revieweeId], references: [id])
+  reviewerRole ReviewerRole   @map("reviewer_role")
+  rating       Int
+  comment      String?
+  isPublic     Boolean        @default(true) @map("is_public")
+  createdAt    DateTime       @default(now()) @map("created_at")
+
+  @@map("reviews")
+}
+
+// ═══════════════════════════════════════════
+// WALLETS
+// ═══════════════════════════════════════════
+
+model Wallet {
+  id                String   @id @default(uuid())
+  userId            String   @unique @map("user_id")
+  user              User     @relation(fields: [userId], references: [id])
+  availableBalance  Decimal  @default(0) @map("available_balance") @db.Decimal(12, 2)
+  escrowBalance     Decimal  @default(0) @map("escrow_balance") @db.Decimal(12, 2)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  transactions WalletTransaction[]
+
+  @@map("wallets")
+}
+
+model WalletTransaction {
+  id              String                   @id @default(uuid())
+  walletId        String                   @map("wallet_id")
+  wallet          Wallet                   @relation(fields: [walletId], references: [id])
+  type            WalletTransactionType
+  amount          Decimal                  @db.Decimal(12, 2)
+  balanceBefore   Decimal?                 @map("balance_before") @db.Decimal(12, 2)
+  balanceAfter    Decimal?                 @map("balance_after") @db.Decimal(12, 2)
+  reference       String                   @unique
+  description     String?
+  requestId       String?                  @map("request_id")
+  request         ServiceRequest?          @relation(fields: [requestId], references: [id])
+  subscriptionId  String?                  @map("subscription_id")
+  subscription    Subscription?            @relation(fields: [subscriptionId], references: [id])
+  paystackRef     String?                  @map("paystack_ref")
+  status          WalletTransactionStatus  @default(success)
+  createdAt       DateTime                 @default(now()) @map("created_at")
+
+  @@map("wallet_transactions")
+}
+
+// ═══════════════════════════════════════════
+// BANK ACCOUNTS
+// ═══════════════════════════════════════════
+
+model BankAccount {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  user          User     @relation(fields: [userId], references: [id])
+  bankName      String   @map("bank_name")
+  bankCode      String   @map("bank_code")
+  accountNumber String   @map("account_number")
+  accountName   String   @map("account_name")
+  isDefault     Boolean  @default(false) @map("is_default")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  withdrawalRequests WithdrawalRequest[]
+
+  @@map("bank_accounts")
+}
+
+// ═══════════════════════════════════════════
+// WITHDRAWAL REQUESTS
+// ═══════════════════════════════════════════
+
+model WithdrawalRequest {
+  id                    String            @id @default(uuid())
+  userId                String            @map("user_id")
+  user                  User              @relation(fields: [userId], references: [id])
+  bankAccountId         String            @map("bank_account_id")
+  bankAccount           BankAccount       @relation(fields: [bankAccountId], references: [id])
+  amount                Decimal           @db.Decimal(12, 2)
+  fee                   Decimal           @default(0) @db.Decimal(12, 2)
+  netAmount             Decimal           @map("net_amount") @db.Decimal(12, 2)
+  status                WithdrawalStatus  @default(pending)
+  paystackTransferCode  String?           @map("paystack_transfer_code")
+  adminNotes            String?           @map("admin_notes")
+  processedAt           DateTime?         @map("processed_at")
+  createdAt             DateTime          @default(now()) @map("created_at")
+
+  @@map("withdrawal_requests")
+}
+
+// ═══════════════════════════════════════════
+// DISPUTES
+// ═══════════════════════════════════════════
+
+model Dispute {
+  id                String        @id @default(uuid())
+  requestId         String        @map("request_id")
+  request           ServiceRequest @relation(fields: [requestId], references: [id])
+  raisedBy          String        @map("raised_by")
+  raisedByUser      User          @relation("DisputesRaised", fields: [raisedBy], references: [id])
+  reason            String
+  evidenceUrls      String[]      @map("evidence_urls")
+  status            DisputeStatus @default(open)
+  resolutionNotes   String?       @map("resolution_notes")
+  resolvedBy        String?       @map("resolved_by")
+  resolvedByUser    User?         @relation("DisputesResolved", fields: [resolvedBy], references: [id])
+  resolvedAt        DateTime?     @map("resolved_at")
+  createdAt         DateTime      @default(now()) @map("created_at")
+
+  @@map("disputes")
+}
+
+// ═══════════════════════════════════════════
+// MESSAGES
+// ═══════════════════════════════════════════
+
+model Message {
+  id        String         @id @default(uuid())
+  requestId String         @map("request_id")
+  request   ServiceRequest @relation(fields: [requestId], references: [id])
+  senderId  String         @map("sender_id")
+  sender    User           @relation(fields: [senderId], references: [id])
+  content   String
+  isRead    Boolean        @default(false) @map("is_read")
+  sentAt    DateTime       @default(now()) @map("sent_at")
+
+  @@map("messages")
+}
+
+// ═══════════════════════════════════════════
+// NOTIFICATIONS
+// ═══════════════════════════════════════════
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  type      String
+  title     String
+  body      String?
+  isRead    Boolean  @default(false) @map("is_read")
+  data      Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("notifications")
+}
+
+// ═══════════════════════════════════════════
+// OTP CODES (registration, login, password reset)
+// ═══════════════════════════════════════════
+
+enum OtpPurpose {
+  register
+  login
+  password_reset
+}
+
+model OtpCode {
+  id         String     @id @default(uuid())
+  identifier String // email or phone
+  codeHash   String     @map("code_hash")
+  purpose    OtpPurpose
+  attempts   Int        @default(0)
+  consumedAt DateTime?  @map("consumed_at")
+  expiresAt  DateTime   @map("expires_at")
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  @@index([identifier, purpose])
+  @@map("otp_codes")
+}
+
+// ═══════════════════════════════════════════
+// ADMIN AUDIT LOG
+// ═══════════════════════════════════════════
+
+model AdminAuditLog {
+  id         String   @id @default(uuid())
+  adminId    String   @map("admin_id")
+  admin      User     @relation(fields: [adminId], references: [id])
+  action     String
+  targetType String?  @map("target_type")
+  targetId   String?  @map("target_id")
+  oldValue   Json?    @map("old_value")
+  newValue   Json?    @map("new_value")
+  notes      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("admin_audit_log")
+}

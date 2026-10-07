@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-background: #f4f8f7;
+  --color-surface: #ffffff;
+  --color-surface-raised: #eef5f3;
+  --color-border: #d4e5e0;
+  --color-text-primary: #1a2e29;
+  --color-text-secondary: #4a6b63;
+  --color-text-muted: #8aada5;
+
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-error: #dc2626;
+  --color-info: #0284c7;
+
+  /* Brand tokens — PRD Section 11. "-dark" variants are used as TEXT/ICON
+     color on light surfaces, so they must flip to a light tint in dark
+     mode to stay legible; "-light" variants are background tints, which
+     must flip to a dark tint for the same reason. */
+  --color-primary: #1a8c6f;
+  --color-primary-dark: #0f5c48;
+  --color-primary-light: #d0efe6;
+  --color-primary-muted: #a8d5c5;
+
+  --color-premium: #b5860d;
+  --color-premium-dark: #7a5a08;
+  --color-premium-light: #fbf0d0;
+
+  --color-accent: #e07b39;
+  --color-accent-light: #fdf0e6;
+}
+
+.dark {
+  --color-background: #0d1e1b;
+  --color-surface: #162922;
+  --color-surface-raised: #1e3832;
+  --color-border: #2a4a42;
+  --color-text-primary: #e8f5f2;
+  --color-text-secondary: #a8c5bd;
+  --color-text-muted: #6f9189;
+
+  --color-primary: #2fb38c;
+  --color-primary-dark: #8fe3c8;
+  --color-primary-light: #16342c;
+  --color-primary-muted: #2f5349;
+
+  --color-premium: #e0ac35;
+  --color-premium-dark: #f5d47e;
+  --color-premium-light: #3a2f10;
+
+  --color-accent: #f0935c;
+  --color-accent-light: #3a2518;
+}
+
+* {
+  border-color: var(--color-border);
+}
+
+body {
+  color: var(--color-text-primary);
+  background: var(--color-background);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Visible focus ring on every focusable element (PRD Section 15) */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 999;
+  padding: 0.5rem 1rem;
+  background: var(--color-primary);
+  color: white;
+  border-radius: 0 0 6px 0;
+}
+
+.skip-link:focus {
+  left: 0;
+}
