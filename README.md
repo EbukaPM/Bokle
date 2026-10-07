@@ -22,6 +22,27 @@ npm run dev
 
 Open http://localhost:3000.
 
+## Deploying (e.g. Netlify/Vercel)
+
+Every value in `.env.example` needs to be set in your host's environment variable settings —
+a `.env.local` file never leaves your machine. Two deserve special attention:
+
+- **`NEXT_PUBLIC_APP_URL`** must be your real production URL (e.g. `https://bokle.netlify.app`).
+  It's used to build the Google OAuth redirect URI and links in outgoing emails/SMS — if it's
+  still `http://localhost:3000` in production, those will be broken even though the rest of the
+  app works fine.
+- **`GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`** — the "Continue with Google" button is hidden
+  automatically when these are empty (see `lib/google-oauth.ts`), which is why it doesn't appear
+  on `/login` or `/register` in dev. To enable it: create an OAuth Client ID in the
+  [Google Cloud Console](https://console.cloud.google.com/apis/credentials), add
+  `https://<your-domain>/api/v1/auth/google/callback` as an authorized redirect URI (must match
+  `NEXT_PUBLIC_APP_URL` exactly, including the domain), then set both env vars on your host and
+  redeploy. The button will appear with no code changes needed.
+
+A Postgres database reachable from your host (e.g. Neon, Supabase, Railway) is required — Netlify
+and Vercel don't provide one. Run `npx prisma migrate deploy` against it once as part of your
+deploy step.
+
 **Seeded accounts:**
 - Super-admin: `admin@bokle.ng` / `Admin#12345`
 - Everyone else registers through the normal signup flow (email/phone OTP).

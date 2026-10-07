@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { api, ApiError } from "@/lib/fetcher";
+import { Logo } from "@/components/layout/Logo";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -48,10 +49,10 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="text-2xl font-bold text-primary-dark">
-            Bokle
-          </Link>
-          <p className="text-text-secondary mt-1">Reset your password</p>
+          <div className="flex justify-center">
+            <Logo size={36} />
+          </div>
+          <p className="text-text-secondary mt-3">Reset your password</p>
         </div>
 
         {step === 1 ? (

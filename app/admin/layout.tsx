@@ -18,6 +18,7 @@ import { useSession } from "@/hooks/useSession";
 import { cn } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { Logo } from "@/components/layout/Logo";
 
 const NAV_ITEMS = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
@@ -47,8 +48,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="min-h-screen bg-background md:flex">
       <aside className="hidden md:block w-56 border-r border-border bg-surface p-4">
-        <Link href="/admin" className="text-lg font-bold text-primary-dark block mb-6">
-          Bokle Admin
+        <Link href="/admin" className="block mb-6">
+          <Logo size={26} href={null} />
+          <span className="block mt-1 text-xs font-semibold uppercase tracking-wide text-text-muted">Admin</span>
         </Link>
         <nav aria-label="Admin navigation" className="space-y-1">
           {NAV_ITEMS.map((item) => {

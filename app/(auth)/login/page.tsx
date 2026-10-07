@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/Input";
 import { api, ApiError } from "@/lib/fetcher";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { Logo } from "@/components/layout/Logo";
 
 const OAUTH_ERROR_MESSAGES: Record<string, string> = {
   google_auth_failed: "Google sign-in failed. Please try again or use your email/phone.",
@@ -76,10 +77,10 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="text-2xl font-bold text-primary-dark">
-            Bokle
-          </Link>
-          <p className="text-text-secondary mt-1">Welcome back</p>
+          <div className="flex justify-center">
+            <Logo size={36} />
+          </div>
+          <p className="text-text-secondary mt-3">Welcome back</p>
         </div>
 
         <Suspense fallback={null}>

@@ -11,6 +11,7 @@ import { formatNaira } from "@/lib/utils";
 import { PremiumBadge } from "@/components/ui/Badge";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { LanguageToggle } from "@/components/layout/LanguageToggle";
+import { Logo } from "@/components/layout/Logo";
 import { usePusherChannel } from "@/hooks/usePusherChannel";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { Wallet as WalletType } from "@prisma/client";
@@ -49,9 +50,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-surface">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3" aria-label="Main navigation">
-        <Link href="/dashboard" className="text-xl font-bold text-primary-dark">
-          Bokle
-        </Link>
+        <Logo href="/dashboard" size={28} />
+
 
         <div className="flex items-center gap-3">
           {user?.membershipTier === "premium" && <PremiumBadge className="hidden sm:inline-flex" />}

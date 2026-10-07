@@ -13,6 +13,7 @@ import { NG_STATES } from "@/lib/data/ng-states";
 import { api } from "@/lib/fetcher";
 import { ApiError } from "@/lib/fetcher";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { Logo } from "@/components/layout/Logo";
 
 const step1Schema = z
   .object({
@@ -85,10 +86,10 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="text-2xl font-bold text-primary-dark">
-            Bokle
-          </Link>
-          <p className="text-text-secondary mt-1">
+          <div className="flex justify-center">
+            <Logo size={36} />
+          </div>
+          <p className="text-text-secondary mt-3">
             Step {step} of 2 — {step === 1 ? "Create your account" : "Verify your contact"}
           </p>
         </div>

@@ -14,9 +14,9 @@ import {
   Plane,
   Building2,
   Check,
+  Camera,
 } from "lucide-react";
-import { ThemeToggle } from "@/components/layout/ThemeToggle";
-import { LanguageToggle } from "@/components/layout/LanguageToggle";
+import { Logo } from "@/components/layout/Logo";
 import { api } from "@/lib/fetcher";
 import { formatNaira } from "@/lib/utils";
 
@@ -49,20 +49,24 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-surface">
+      <header className="sticky top-0 z-40 border-b border-border bg-surface/95 backdrop-blur">
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
-          <span className="text-xl font-bold text-primary-dark">Bokle</span>
+          <Logo />
+          <div className="hidden lg:flex items-center gap-6 text-sm font-medium text-text-secondary">
+            <a href="#how-it-works" className="hover:text-text-primary">How it works</a>
+            <a href="#check-am" className="hover:text-text-primary">Check Am</a>
+            <a href="#pricing" className="hover:text-text-primary">Pricing</a>
+            <a href="#enterprise" className="hover:text-text-primary">Enterprise</a>
+          </div>
           <div className="flex items-center gap-2">
-            <LanguageToggle />
-            <ThemeToggle />
             <Link href="/login" className="text-sm font-medium text-text-secondary hover:text-text-primary px-2">
-              Log in
+              Sign in
             </Link>
             <Link
               href="/register"
               className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
             >
-              Sign up
+              Get Started
             </Link>
           </div>
         </nav>
@@ -115,7 +119,7 @@ export default function LandingPage() {
         )}
 
         {/* How it works */}
-        <section className="mx-auto max-w-6xl px-4 py-12">
+        <section id="how-it-works" className="mx-auto max-w-6xl px-4 py-12 scroll-mt-20">
           <h2 className="text-center text-2xl font-semibold text-text-primary mb-8">How Bokle works</h2>
           <div className="grid gap-6 sm:grid-cols-3">
             {HOW_IT_WORKS.map((step, i) => (
@@ -144,23 +148,57 @@ export default function LandingPage() {
         </section>
 
         {/* Help Me Check Am spotlight */}
-        <section className="mx-auto max-w-6xl px-4 py-12">
+        <section id="check-am" className="mx-auto max-w-6xl px-4 py-12 scroll-mt-20">
           <div className="rounded-2xl border-l-4 border-premium bg-premium-light/40 p-8 sm:p-10">
-            <span className="inline-flex items-center gap-1 rounded-full bg-premium px-3 py-1 text-xs font-semibold text-white">
-              <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Premium Feature
-            </span>
-            <h2 className="mt-4 text-2xl font-bold text-premium-dark">Help Me Check Am</h2>
-            <p className="mt-2 max-w-2xl text-text-secondary">
-              Buying a car in Lagos from Abuja? Checking on your mother in Enugu? Verifying a property before you
-              send money? Dispatch a verified local Bokle user to physically check it and send you a structured,
-              photo-backed report — wherever you are.
-            </p>
-            <Link
-              href="/register"
-              className="mt-5 inline-flex rounded-lg bg-premium px-5 py-2.5 text-sm font-medium text-white hover:bg-premium-dark"
-            >
-              See how it works
-            </Link>
+            <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
+              <div>
+                <span className="inline-flex items-center gap-1 rounded-full bg-premium px-3 py-1 text-xs font-semibold text-white">
+                  <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Premium Feature
+                </span>
+                <h2 className="mt-4 text-2xl font-bold text-premium-dark sm:text-3xl">
+                  Physical verification, with proof — anywhere in Nigeria.
+                </h2>
+                <p className="mt-3 max-w-xl text-text-secondary">
+                  Buying a car in Lagos from Abuja? Checking on your mother in Enugu? Verifying a property before
+                  you send money? Dispatch a verified local Bokle user to go and look — in person — and send back a
+                  structured, photo-backed report. Not a phone call and a promise.
+                </p>
+                <Link
+                  href="/register"
+                  className="mt-5 inline-flex rounded-lg bg-premium px-5 py-2.5 text-sm font-medium text-white hover:bg-premium-dark"
+                >
+                  See how it works
+                </Link>
+              </div>
+
+              {/* Proof snippet — a real report's shape, not a fabricated quote */}
+              <div className="rounded-xl border border-premium/30 bg-surface p-5 font-mono text-xs shadow-sm">
+                <div className="flex items-center justify-between text-text-muted">
+                  <span>check_am_report.json</span>
+                  <Camera className="h-3.5 w-3.5" aria-hidden="true" />
+                </div>
+                <div className="mt-3 space-y-1.5 text-text-primary">
+                  <p>
+                    <span className="text-premium-dark">type</span>: Vehicle Check
+                  </p>
+                  <p>
+                    <span className="text-premium-dark">subject</span>: 2015 Toyota Camry · Ikeja, Lagos
+                  </p>
+                  <p>
+                    <span className="text-premium-dark">checker</span>: Provider One (Verified)
+                  </p>
+                  <p>
+                    <span className="text-premium-dark">photos</span>: 6 attached
+                  </p>
+                  <p>
+                    <span className="text-premium-dark">assessment</span>: Recommended
+                  </p>
+                  <p>
+                    <span className="text-premium-dark">delivered</span>: 6h after request
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -209,7 +247,7 @@ export default function LandingPage() {
         </section>
 
         {/* Premium pricing teaser */}
-        <section className="mx-auto max-w-6xl px-4 py-12">
+        <section id="pricing" className="mx-auto max-w-6xl px-4 py-12 scroll-mt-20">
           <h2 className="text-center text-2xl font-semibold text-text-primary mb-2">Unlock Help Me Check Am</h2>
           <p className="text-center text-text-secondary mb-8">Simple Premium pricing. Cancel anytime.</p>
           <div className="grid gap-4 sm:grid-cols-3 max-w-3xl mx-auto">
@@ -225,7 +263,7 @@ export default function LandingPage() {
         </section>
 
         {/* Enterprise */}
-        <section className="mx-auto max-w-6xl px-4 py-12">
+        <section id="enterprise" className="mx-auto max-w-6xl px-4 py-12 scroll-mt-20">
           <div className="rounded-2xl border border-border bg-surface-raised p-8 sm:p-10 flex flex-col sm:flex-row gap-6 items-start">
             <div className="rounded-full bg-primary-light p-3 flex-shrink-0">
               <Building2 className="h-6 w-6 text-primary-dark" aria-hidden="true" />
@@ -261,8 +299,47 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t border-border bg-surface">
-        <div className="mx-auto max-w-6xl px-4 py-8 text-center text-sm text-text-muted">
-          © {new Date().getFullYear()} Bokle. Built for Nigeria.
+        <div className="mx-auto max-w-6xl px-4 py-12">
+          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <Logo />
+              <p className="mt-3 max-w-xs text-sm text-text-secondary">
+                Trusted help, right where you need it — verified providers and physical
+                verification, anywhere in Nigeria.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-text-primary">Product</h3>
+              <ul className="mt-3 space-y-2 text-sm text-text-secondary">
+                <li><a href="#how-it-works" className="hover:text-text-primary">How it works</a></li>
+                <li><a href="#check-am" className="hover:text-text-primary">Help Me Check Am</a></li>
+                <li><a href="#pricing" className="hover:text-text-primary">Pricing</a></li>
+                <li><a href="#enterprise" className="hover:text-text-primary">Enterprise</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-text-primary">Account</h3>
+              <ul className="mt-3 space-y-2 text-sm text-text-secondary">
+                <li><Link href="/register" className="hover:text-text-primary">Get Started</Link></li>
+                <li><Link href="/login" className="hover:text-text-primary">Sign in</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-text-primary">Legal</h3>
+              <ul className="mt-3 space-y-2 text-sm text-text-secondary">
+                <li><Link href="/privacy" className="hover:text-text-primary">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-text-primary">Terms of Service</Link></li>
+                <li><a href="mailto:hello@bokle.ng" className="hover:text-text-primary">hello@bokle.ng</a></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="mt-10 border-t border-border pt-6 text-center text-sm text-text-muted">
+            © {new Date().getFullYear()} Bokle. Built for Nigeria.
+          </div>
         </div>
       </footer>
     </div>
