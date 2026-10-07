@@ -10,7 +10,9 @@ import { api } from "@/lib/fetcher";
 import { formatNaira } from "@/lib/utils";
 import { PremiumBadge } from "@/components/ui/Badge";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { LanguageToggle } from "@/components/layout/LanguageToggle";
 import { usePusherChannel } from "@/hooks/usePusherChannel";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { Wallet as WalletType } from "@prisma/client";
 
 export function Navbar() {
@@ -18,6 +20,7 @@ export function Navbar() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { t } = useTranslation();
 
   const { data: wallet } = useQuery({
     queryKey: ["wallet"],
@@ -53,6 +56,7 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           {user?.membershipTier === "premium" && <PremiumBadge className="hidden sm:inline-flex" />}
 
+          <LanguageToggle />
           <ThemeToggle />
 
           <Link
@@ -91,7 +95,7 @@ export function Navbar() {
                 className="absolute right-0 mt-2 w-48 rounded-lg border border-border bg-surface shadow-lg py-1"
               >
                 <Link href="/profile" role="menuitem" className="block px-4 py-2 text-sm hover:bg-surface-raised">
-                  Profile
+                  {t("nav_profile")}
                 </Link>
                 {user?.isAdmin && (
                   <Link href="/admin" role="menuitem" className="block px-4 py-2 text-sm hover:bg-surface-raised">
@@ -103,7 +107,7 @@ export function Navbar() {
                   role="menuitem"
                   className="block w-full text-left px-4 py-2 text-sm text-error hover:bg-surface-raised"
                 >
-                  Log out
+                  {t("log_out")}
                 </button>
               </div>
             )}

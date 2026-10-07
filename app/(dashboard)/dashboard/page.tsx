@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/ui/Badge";
 import { api } from "@/lib/fetcher";
 import { formatDate, formatNaira } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { ServiceRequest, ServiceCategory } from "@prisma/client";
 
 type RequestWithCategory = ServiceRequest & { category: ServiceCategory };
@@ -16,6 +17,7 @@ type RequestWithCategory = ServiceRequest & { category: ServiceCategory };
 export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const activeRole = useAuthStore((s) => s.activeRole);
+  const { t } = useTranslation();
 
   const { data: requests } = useQuery({
     queryKey: ["requests", "active"],
@@ -36,8 +38,10 @@ export default function DashboardPage() {
       <Card>
         <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-text-primary">Welcome back, {user?.fullName?.split(" ")[0]}</h1>
-            <p className="text-text-secondary mt-1">What would you like to do today?</p>
+            <h1 className="text-2xl font-bold text-text-primary">
+              {t("dashboard_welcome")}, {user?.fullName?.split(" ")[0]}
+            </h1>
+            <p className="text-text-secondary mt-1">{t("dashboard_subtitle")}</p>
           </div>
           <RoleToggle />
         </CardContent>
@@ -53,8 +57,8 @@ export default function DashboardPage() {
                     <Plus className="h-5 w-5 text-primary-dark" aria-hidden="true" />
                   </div>
                   <div>
-                    <p className="font-semibold text-text-primary">Post a service request</p>
-                    <p className="text-sm text-text-secondary">Domestic help, errands, caregiving & more</p>
+                    <p className="font-semibold text-text-primary">{t("post_request")}</p>
+                    <p className="text-sm text-text-secondary">{t("post_request_desc")}</p>
                   </div>
                 </CardContent>
               </Card>
@@ -66,7 +70,7 @@ export default function DashboardPage() {
                     <Sparkles className="h-5 w-5 text-white" aria-hidden="true" />
                   </div>
                   <div>
-                    <p className="font-semibold text-premium-dark">Help Me Check Am</p>
+                    <p className="font-semibold text-premium-dark">{t("check_am_title")}</p>
                     <p className="text-sm text-text-secondary">Dispatch a verified checker anywhere in Nigeria</p>
                   </div>
                 </div>
@@ -76,15 +80,15 @@ export default function DashboardPage() {
 
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold text-text-primary">Active requests</h2>
+              <h2 className="text-lg font-semibold text-text-primary">{t("active_requests")}</h2>
               <Link href="/requests" className="text-sm text-primary-dark font-medium flex items-center gap-1">
-                View all <ArrowRight className="h-3.5 w-3.5" />
+                {t("view_all")} <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
             {!activeRequests?.length ? (
               <Card>
                 <CardContent className="text-center py-8">
-                  <p className="text-text-secondary">You have no active requests yet.</p>
+                  <p className="text-text-secondary">{t("no_active_requests")}</p>
                 </CardContent>
               </Card>
             ) : (
@@ -112,14 +116,14 @@ export default function DashboardPage() {
             <Card className="h-full hover:border-primary transition-colors">
               <CardContent>
                 <p className="text-3xl font-bold text-primary-dark">{availableJobs?.length ?? "—"}</p>
-                <p className="text-sm text-text-secondary mt-1">Jobs available near you</p>
+                <p className="text-sm text-text-secondary mt-1">{t("jobs_available_near_you")}</p>
               </CardContent>
             </Card>
           </Link>
           <Link href="/profile/provider">
             <Card className="h-full hover:border-primary transition-colors">
               <CardContent>
-                <p className="font-semibold text-text-primary">Manage your provider profile</p>
+                <p className="font-semibold text-text-primary">{t("manage_provider_profile")}</p>
                 <p className="text-sm text-text-secondary mt-1">Categories, coverage area & verification</p>
               </CardContent>
             </Card>

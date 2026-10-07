@@ -9,6 +9,7 @@ const schema = z.object({
   isSuspended: z.boolean().optional(),
   grantPremiumDays: z.number().int().positive().optional(),
   revokePremium: z.boolean().optional(),
+  isEnterprise: z.boolean().optional(),
 });
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
@@ -17,7 +18,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     if (!admin) return apiError("Forbidden", 403);
 
     const body = await req.json();
-    const { isSuspended, grantPremiumDays, revokePremium } = schema.parse(body);
+    const { isSuspended, grantPremiumDays, revokePremium, isEnterprise } = schema.parse(body);
 
     if ((grantPremiumDays || revokePremium) && !(await requireSuperAdmin())) {
       return apiError("Granting/revoking premium requires super-admin", 403);
@@ -39,6 +40,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       data.membershipTier = "free";
       data.premiumExpiresAt = null;
       logSummary.revokedPremium = true;
+    }
+    if (isEnterprise !== undefined) {
+      data.isEnterprise = isEnterprise;
+      logSummary.isEnterprise = isEnterprise;
     }
 
     const user = await prisma.user.update({ where: { id: params.id }, data });

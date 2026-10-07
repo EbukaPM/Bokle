@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { apiSuccess, handleApiError } from "@/lib/api";
+import { scoreProvider } from "@/lib/matching";
 
 export async function GET(req: NextRequest) {
   try {
@@ -24,6 +25,13 @@ export async function GET(req: NextRequest) {
       },
       orderBy: { avgRating: "desc" },
     });
+
+    // When browsing within a specific category, surface the best overall
+    // match first (rating + response rate + experience + location) rather
+    // than rating alone.
+    if (categoryId) {
+      providers.sort((a, b) => scoreProvider(b, { state }).total - scoreProvider(a, { state }).total);
+    }
 
     return apiSuccess({ providers });
   } catch (err) {

@@ -12,6 +12,7 @@ import { Select } from "@/components/ui/Select";
 import { NG_STATES } from "@/lib/data/ng-states";
 import { api } from "@/lib/fetcher";
 import { ApiError } from "@/lib/fetcher";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 
 const step1Schema = z
   .object({
@@ -124,6 +125,8 @@ export default function RegisterPage() {
             <Button type="submit" className="w-full" isLoading={isSubmitting}>
               Continue
             </Button>
+
+            <GoogleSignInButton />
           </form>
         ) : (
           <form onSubmit={onStep2Submit} className="space-y-4" noValidate>

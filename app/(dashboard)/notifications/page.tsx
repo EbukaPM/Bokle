@@ -1,14 +1,17 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bell } from "lucide-react";
+import { Bell, BellRing, BellOff } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
 import { api } from "@/lib/fetcher";
 import { formatDateTime, cn } from "@/lib/utils";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import type { Notification } from "@prisma/client";
 
 export default function NotificationsPage() {
   const queryClient = useQueryClient();
+  const push = usePushNotifications();
 
   const { data } = useQuery({
     queryKey: ["notifications"],
@@ -35,6 +38,40 @@ export default function NotificationsPage() {
           </button>
         )}
       </div>
+
+      {push.status !== "unsupported" && push.status !== "unconfigured" && (
+        <Card>
+          <CardContent className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              {push.status === "subscribed" ? (
+                <BellRing className="h-5 w-5 text-primary-dark flex-shrink-0" />
+              ) : (
+                <BellOff className="h-5 w-5 text-text-muted flex-shrink-0" />
+              )}
+              <div>
+                <p className="font-medium text-text-primary">Browser push notifications</p>
+                <p className="text-sm text-text-secondary">
+                  {push.status === "subscribed"
+                    ? "Enabled on this device."
+                    : push.status === "denied"
+                      ? "Blocked — enable notifications for this site in your browser settings."
+                      : "Get notified instantly, even when Bokle isn't open."}
+                </p>
+              </div>
+            </div>
+            {push.status !== "denied" && (
+              <Button
+                size="sm"
+                variant={push.status === "subscribed" ? "ghost" : "secondary"}
+                onClick={push.status === "subscribed" ? push.unsubscribe : push.subscribe}
+                isLoading={push.isLoading}
+              >
+                {push.status === "subscribed" ? "Disable" : "Enable"}
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {!data?.notifications.length && (
         <Card>

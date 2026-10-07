@@ -1,5 +1,24 @@
+"use client";
+
 import Link from "next/link";
-import { ShieldCheck, Wallet, FileCheck2, Sparkles, Home as HomeIcon, Baby, ShoppingCart, Car } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import {
+  ShieldCheck,
+  Wallet,
+  FileCheck2,
+  Sparkles,
+  Home as HomeIcon,
+  Baby,
+  ShoppingCart,
+  Car,
+  Plane,
+  Building2,
+  Check,
+} from "lucide-react";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { LanguageToggle } from "@/components/layout/LanguageToggle";
+import { api } from "@/lib/fetcher";
+import { formatNaira } from "@/lib/utils";
 
 const HOW_IT_WORKS = [
   { title: "Tell us what you need", body: "Post a request or a Help Me Check Am job in minutes." },
@@ -14,14 +33,29 @@ const CATEGORY_TILES = [
   { icon: Car, label: "Vehicle Checks" },
 ];
 
+interface PublicStats {
+  verifiedProviders: number;
+  completedJobs: number;
+  cities: number;
+  prices: { monthly: number; quarterly: number; annual: number };
+}
+
 export default function LandingPage() {
+  const { data: stats } = useQuery({
+    queryKey: ["public", "stats"],
+    queryFn: () => api.get<PublicStats>("/api/v1/public/stats"),
+    staleTime: 60_000,
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-surface">
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4">
           <span className="text-xl font-bold text-primary-dark">Bokle</span>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm font-medium text-text-secondary hover:text-text-primary">
+          <div className="flex items-center gap-2">
+            <LanguageToggle />
+            <ThemeToggle />
+            <Link href="/login" className="text-sm font-medium text-text-secondary hover:text-text-primary px-2">
               Log in
             </Link>
             <Link
@@ -59,6 +93,26 @@ export default function LandingPage() {
             </Link>
           </div>
         </section>
+
+        {/* Platform stats */}
+        {!!stats && (stats.verifiedProviders > 0 || stats.completedJobs > 0) && (
+          <section className="mx-auto max-w-6xl px-4 pb-12">
+            <div className="grid grid-cols-3 gap-4 rounded-2xl border border-border bg-surface p-6 text-center">
+              <div>
+                <p className="text-2xl font-bold text-primary-dark">{stats.verifiedProviders}+</p>
+                <p className="text-sm text-text-secondary mt-1">Verified providers</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-primary-dark">{stats.completedJobs}+</p>
+                <p className="text-sm text-text-secondary mt-1">Jobs completed</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-primary-dark">{stats.cities || 1}+</p>
+                <p className="text-sm text-text-secondary mt-1">Cities covered</p>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* How it works */}
         <section className="mx-auto max-w-6xl px-4 py-12">
@@ -110,6 +164,23 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Diaspora / remote care */}
+        <section className="mx-auto max-w-6xl px-4 py-12">
+          <div className="rounded-2xl border border-border bg-surface p-8 sm:p-10 flex flex-col sm:flex-row gap-6 items-start">
+            <div className="rounded-full bg-primary-light p-3 flex-shrink-0">
+              <Plane className="h-6 w-6 text-primary-dark" aria-hidden="true" />
+            </div>
+            <div>
+              <h2 className="text-xl font-bold text-text-primary">Living abroad? Still show up for family back home.</h2>
+              <p className="mt-2 max-w-2xl text-text-secondary">
+                From London, Lagos never felt so close. Book a recurring welfare visit for a parent, verify a
+                property before you wire money, or get a car checked before a relative buys it — all from wherever
+                you are, with a documented report waiting in your inbox.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Trust signals */}
         <section className="mx-auto max-w-6xl px-4 py-12">
           <div className="grid gap-6 sm:grid-cols-3">
@@ -133,6 +204,46 @@ export default function LandingPage() {
                 <p className="font-semibold text-text-primary">Documented reports</p>
                 <p className="text-sm text-text-secondary">Every job ends with a photo-backed, downloadable report.</p>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Premium pricing teaser */}
+        <section className="mx-auto max-w-6xl px-4 py-12">
+          <h2 className="text-center text-2xl font-semibold text-text-primary mb-2">Unlock Help Me Check Am</h2>
+          <p className="text-center text-text-secondary mb-8">Simple Premium pricing. Cancel anytime.</p>
+          <div className="grid gap-4 sm:grid-cols-3 max-w-3xl mx-auto">
+            {(["monthly", "quarterly", "annual"] as const).map((plan) => (
+              <div key={plan} className="rounded-xl border border-border bg-surface p-6 text-center">
+                <p className="text-sm font-medium capitalize text-text-secondary">{plan}</p>
+                <p className="text-2xl font-bold text-premium-dark mt-1">
+                  {stats ? formatNaira(stats.prices[plan]) : "—"}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Enterprise */}
+        <section className="mx-auto max-w-6xl px-4 py-12">
+          <div className="rounded-2xl border border-border bg-surface-raised p-8 sm:p-10 flex flex-col sm:flex-row gap-6 items-start">
+            <div className="rounded-full bg-primary-light p-3 flex-shrink-0">
+              <Building2 className="h-6 w-6 text-primary-dark" aria-hidden="true" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-xl font-bold text-text-primary">Running a business? Book at scale.</h2>
+              <p className="mt-2 max-w-2xl text-text-secondary">
+                Enterprise accounts can book cleaning, maintenance, or care visits across multiple sites or
+                recipients in one submission — with the same escrow protection and documented reports.
+              </p>
+              <ul className="mt-4 space-y-1.5 text-sm text-text-secondary">
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-primary flex-shrink-0" /> Bulk-book up to 50 visits at once
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="h-4 w-4 text-primary flex-shrink-0" /> One wallet, one invoice
+                </li>
+              </ul>
             </div>
           </div>
         </section>

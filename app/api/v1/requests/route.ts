@@ -5,9 +5,8 @@ import { createGeneralRequestSchema, createCheckAmRequestSchema } from "@/lib/va
 import { apiSuccess, apiError, handleApiError } from "@/lib/api";
 import { isPremiumActive } from "@/lib/subscription";
 import { calculateCheckAmPrice } from "@/lib/check-am";
-import { holdEscrow } from "@/lib/wallet";
 import { getSetting } from "@/lib/settings";
-import { sendNotification } from "@/lib/notifications";
+import { createRequest } from "@/lib/requests";
 
 export async function GET(req: NextRequest) {
   try {
@@ -88,69 +87,3 @@ export async function POST(req: NextRequest) {
   }
 }
 
-async function createRequest(
-  clientId: string,
-  requestType: "general" | "check_am",
-  categoryId: string,
-  data: {
-    subjectId?: string;
-    subjectDescription?: string;
-    serviceAddress: string;
-    serviceState?: string;
-    serviceLga?: string;
-    lat?: number;
-    lng?: number;
-    preferredDate: string;
-    preferredTime?: string;
-    isRecurring?: boolean;
-    recurrencePattern?: "daily" | "weekly" | "monthly";
-    specialInstructions?: string;
-  },
-  quotedPrice: number,
-  extra: { reportDeadline?: Date; clientQuestions?: string[]; referenceFileUrls?: string[] }
-) {
-  const request = await prisma.serviceRequest.create({
-    data: {
-      clientId,
-      categoryId,
-      requestType,
-      subjectId: data.subjectId,
-      subjectDescription: data.subjectDescription,
-      clientQuestions: extra.clientQuestions ?? [],
-      serviceAddress: data.serviceAddress,
-      serviceState: data.serviceState,
-      serviceLga: data.serviceLga,
-      lat: data.lat,
-      lng: data.lng,
-      preferredDate: new Date(data.preferredDate),
-      preferredTime: data.preferredTime,
-      reportDeadline: extra.reportDeadline,
-      isRecurring: data.isRecurring ?? false,
-      recurrencePattern: data.recurrencePattern,
-      specialInstructions: data.specialInstructions,
-      referenceFileUrls: extra.referenceFileUrls ?? [],
-      quotedPrice,
-      status: "open",
-    },
-  });
-
-  try {
-    await holdEscrow(clientId, request.id, quotedPrice);
-  } catch (err) {
-    await prisma.serviceRequest.delete({ where: { id: request.id } });
-    if (err instanceof Error && err.message === "INSUFFICIENT_BALANCE") {
-      throw new Error("Insufficient wallet balance. Please top up and try again.");
-    }
-    throw err;
-  }
-
-  await sendNotification({
-    userId: clientId,
-    type: "request_created",
-    title: requestType === "check_am" ? "Check Am request posted" : "Request posted",
-    body: "We're matching you with a verified provider nearby.",
-    priority: "medium",
-  });
-
-  return request;
-}

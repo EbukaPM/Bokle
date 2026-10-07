@@ -9,11 +9,20 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { api, ApiError } from "@/lib/fetcher";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+
+const OAUTH_ERROR_MESSAGES: Record<string, string> = {
+  google_auth_failed: "Google sign-in failed. Please try again or use your email/phone.",
+  google_not_configured: "Google sign-in isn't available right now.",
+  account_suspended: "This account has been suspended. Contact support.",
+};
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [serverError, setServerError] = useState<string | null>(null);
+  const [serverError, setServerError] = useState<string | null>(
+    () => OAUTH_ERROR_MESSAGES[searchParams.get("error") || ""] || null
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -56,6 +65,8 @@ function LoginForm() {
       <Button type="submit" className="w-full" isLoading={isSubmitting}>
         Log in
       </Button>
+
+      <GoogleSignInButton />
     </form>
   );
 }

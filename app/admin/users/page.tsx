@@ -18,6 +18,7 @@ interface AdminUser {
   providerVerified: boolean;
   isSuspended: boolean;
   isAdmin: boolean;
+  isEnterprise: boolean;
 }
 
 export default function AdminUsersPage() {
@@ -50,6 +51,16 @@ export default function AdminUsersPage() {
     }
   }
 
+  async function toggleEnterprise(id: string, isEnterprise: boolean) {
+    setActingId(id);
+    try {
+      await api.patch(`/api/v1/admin/users/${id}`, { isEnterprise: !isEnterprise });
+      queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+    } finally {
+      setActingId(null);
+    }
+  }
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-text-primary">Users</h1>
@@ -63,6 +74,11 @@ export default function AdminUsersPage() {
                 <div className="flex items-center gap-2">
                   <p className="font-medium text-text-primary">{u.fullName}</p>
                   {u.membershipTier === "premium" && <PremiumBadge />}
+                  {u.isEnterprise && (
+                    <span className="text-xs rounded-full bg-primary-light px-2 py-0.5 font-medium text-primary-dark">
+                      Enterprise
+                    </span>
+                  )}
                   {u.isSuspended && <span className="text-xs text-error font-medium">Suspended</span>}
                 </div>
                 <p className="text-sm text-text-secondary">{u.email || u.phone}</p>
@@ -73,6 +89,14 @@ export default function AdminUsersPage() {
                     Grant Premium
                   </Button>
                 )}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => toggleEnterprise(u.id, u.isEnterprise)}
+                  isLoading={actingId === u.id}
+                >
+                  {u.isEnterprise ? "Remove Enterprise" : "Make Enterprise"}
+                </Button>
                 {!u.isAdmin && (
                   <Button
                     size="sm"

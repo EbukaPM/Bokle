@@ -14,6 +14,7 @@ export interface SessionUser {
   providerVerified: boolean;
   isAdmin: boolean;
   isSuperAdmin: boolean;
+  isEnterprise: boolean;
 }
 
 interface AuthState {

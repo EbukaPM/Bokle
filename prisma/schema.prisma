@@ -151,6 +151,12 @@ model User {
   dvaBankName          String? @map("dva_bank_name")
   dvaAccountName       String? @map("dva_account_name")
 
+  // Enterprise / bulk-booking tier (PRD P2).
+  isEnterprise         Boolean @default(false) @map("is_enterprise")
+
+  // Google OAuth (PRD P2).
+  googleId             String? @unique @map("google_id")
+
   createdAt          DateTime  @default(now()) @map("created_at")
   updatedAt          DateTime  @updatedAt @map("updated_at")
 
@@ -167,6 +173,7 @@ model User {
   disputesResolved   Dispute[]          @relation("DisputesResolved")
   messagesSent       Message[]
   notifications      Notification[]
+  pushSubscriptions  PushSubscription[]
   adminAuditLogs     AdminAuditLog[]
   settingsUpdated    PlatformSetting[]
 
@@ -217,6 +224,7 @@ model ServiceCategory {
 
   providerCategories  ProviderCategory[]
   serviceRequests     ServiceRequest[]
+  trainingModules     TrainingModule[]
 
   @@map("service_categories")
 }
@@ -264,6 +272,7 @@ model ProviderProfile {
   availability        ProviderAvailability[]
   assignedRequests    ServiceRequest[]
   reports             Report[]
+  trainingProgress    ProviderTrainingProgress[]
 
   @@map("provider_profiles")
 }
@@ -560,6 +569,22 @@ model Notification {
 }
 
 // ═══════════════════════════════════════════
+// PUSH SUBSCRIPTIONS (PWA browser push — PRD P2)
+// ═══════════════════════════════════════════
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("push_subscriptions")
+}
+
+// ═══════════════════════════════════════════
 // OTP CODES (registration, login, password reset)
 // ═══════════════════════════════════════════
 
@@ -600,4 +625,37 @@ model AdminAuditLog {
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@map("admin_audit_log")
+}
+
+// ═══════════════════════════════════════════
+// PROVIDER UPSKILLING (training modules)
+// ═══════════════════════════════════════════
+
+model TrainingModule {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  content     String // markdown
+  categoryId  String?  @map("category_id")
+  category    ServiceCategory? @relation(fields: [categoryId], references: [id])
+  isPublished Boolean  @default(true) @map("is_published")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  progress ProviderTrainingProgress[]
+
+  @@map("training_modules")
+}
+
+model ProviderTrainingProgress {
+  id          String          @id @default(uuid())
+  providerId  String          @map("provider_id")
+  provider    ProviderProfile @relation(fields: [providerId], references: [id])
+  moduleId    String          @map("module_id")
+  module      TrainingModule  @relation(fields: [moduleId], references: [id])
+  completedAt DateTime        @default(now()) @map("completed_at")
+
+  @@unique([providerId, moduleId])
+  @@map("provider_training_progress")
 }

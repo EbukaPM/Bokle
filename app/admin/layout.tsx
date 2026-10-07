@@ -11,6 +11,8 @@ import {
   Wallet,
   Settings,
   UserCog,
+  Megaphone,
+  GraduationCap,
 } from "lucide-react";
 import { useSession } from "@/hooks/useSession";
 import { cn } from "@/lib/utils";
@@ -25,6 +27,8 @@ const NAV_ITEMS = [
   { href: "/admin/subscriptions", label: "Subscriptions", icon: CreditCard },
   { href: "/admin/disputes", label: "Disputes", icon: AlertTriangle },
   { href: "/admin/finances", label: "Finances", icon: Wallet },
+  { href: "/admin/training", label: "Training", icon: GraduationCap },
+  { href: "/admin/broadcast", label: "Broadcast", icon: Megaphone },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

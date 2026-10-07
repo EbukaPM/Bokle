@@ -3,13 +3,14 @@ import { prisma } from "./db";
 import { sendSms } from "./termii";
 import { sendEmail } from "./resend";
 import { triggerEvent, userChannel } from "./pusher";
+import { sendPushToUser } from "./push";
 
 // Delivery priority per PRD Section 14.
 export type NotificationPriority = "high" | "medium" | "low";
 
-const PRIORITY_CHANNELS: Record<NotificationPriority, ("in_app" | "sms" | "email")[]> = {
-  high: ["in_app", "sms"],
-  medium: ["in_app", "email"],
+const PRIORITY_CHANNELS: Record<NotificationPriority, ("in_app" | "sms" | "email" | "push")[]> = {
+  high: ["in_app", "sms", "push"],
+  medium: ["in_app", "email", "push"],
   low: ["in_app"],
 };
 
@@ -44,6 +45,9 @@ export async function sendNotification(params: SendNotificationParams) {
   }
   if (channels.includes("email") && user.email) {
     await sendEmail(user.email, params.title, `<p>${params.body ?? ""}</p>`);
+  }
+  if (channels.includes("push")) {
+    await sendPushToUser(params.userId, { title: params.title, body: params.body, url: "/notifications" });
   }
 
   return notification;

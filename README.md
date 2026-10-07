@@ -6,7 +6,8 @@ Community services & verification marketplace for Nigeria, including the premium
 ## Stack
 
 Next.js 14 (App Router) · TypeScript · Tailwind CSS · Prisma + PostgreSQL · Zustand ·
-TanStack Query · React Hook Form + Zod · Paystack · Termii · Resend · Cloudinary · Pusher
+TanStack Query · React Hook Form + Zod · Paystack · Termii · Resend · Cloudinary · Pusher ·
+web-push · Google OAuth
 
 ## Getting started
 
@@ -33,14 +34,30 @@ Premium upgrade flow — runs and is testable end-to-end with zero external acco
 
 | Service | Dev mode (no keys) | Live mode (keys set) |
 |---|---|---|
-| **Paystack** (`lib/paystack.ts`) | Mock checkout URL, instant "success" verification | Real card charges, transfers, bank resolution via Paystack API |
+| **Paystack** (`lib/paystack.ts`) | Mock checkout URL, instant "success" verification | Real card charges, transfers, bank resolution, Dedicated Virtual Accounts |
 | **Termii / Resend** (SMS/email) | OTPs and notifications logged to the server console | Real SMS/email delivery |
 | **Cloudinary** (`lib/cloudinary.ts`) | Uploaded images stored as base64 data URLs in Postgres | Real CDN hosting, signed private URLs for ID docs |
-| **Pusher** (`lib/pusher.ts`) | Real-time events logged, not pushed | Live WebSocket notifications |
+| **Pusher** (`lib/pusher.ts`) | Real-time events logged, not pushed | Live WebSocket notifications (notifications bell, chat) |
+| **Web Push** (`lib/push.ts`) | N/A — VAPID keys are self-generated, not a third-party account | Already live by default once `npx web-push generate-vapid-keys` output is in `.env.local` |
+| **Google OAuth** (`lib/google-oauth.ts`) | "Continue with Google" button hidden entirely | Button appears once `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` are set |
 
 Everything else — auth, the wallet double-entry ledger, escrow hold/release, commission
-splits, premium gating, provider verification, admin settings, disputes — is fully
+splits, premium gating, provider verification, admin settings, disputes, recurring
+bookings, the provider-matching algorithm, enterprise bulk booking — is fully
 implemented against the real database, not stubbed.
+
+## Feature coverage (PRD Section 19 MoSCoW)
+
+- **P0 (Must Have)** — complete.
+- **P1 (Should Have)** — complete: recurring bookings, real-time Pusher wiring, provider
+  availability calendar, earnings analytics, admin subscriber management, transaction
+  log + CSV export, Paystack Dedicated Virtual Accounts.
+- **P2 (Could Have)** — complete: composite-score provider matching + auto-match
+  (`lib/matching.ts`), Google OAuth, English/Pidgin language toggle (`lib/i18n/`),
+  Web Push PWA notifications, enterprise bulk-booking tier, provider training/
+  upskilling modules, admin bulk broadcast messaging.
+- **P3** — explicitly out of scope per the PRD itself (native apps, video, USSD,
+  international payments, AI-generated summaries, multi-country).
 
 ## What's deliberately out of scope for this pass
 
@@ -50,21 +67,27 @@ implemented against the real database, not stubbed.
   repeatable job) before relying on it in production.
 - **Premium auto-renewal**: subscriptions expire and downgrade correctly
   (`expirePremiumUsers` in `lib/subscription.ts`), but nothing calls it on a schedule yet.
-- **P1/P2/P3 features** from the PRD's MoSCoW list (recurring-booking automation, email
-  notifications beyond the dev-log stub, Google OAuth, multi-language, PWA push, AI
-  matching, native apps) — not started.
 - Direct "book this specific provider" flow — the provider profile page is
   informational; booking always goes through the open-request + accept/match flow.
+- The Pidgin translation dictionary (`lib/i18n/translations.ts`) covers primary
+  navigation and common actions, not every string in the app — add keys as more
+  surfaces get translated.
+- PWA push notifications are fully implemented server-side and client-side, but
+  Service Worker registration couldn't be exercised in this build environment's
+  sandboxed browser (it blocks `serviceWorker.register` by policy) — verify in a real
+  browser; the server-side subscribe/send pipeline is tested and works.
 
 ## Database schema
 
-`prisma/schema.prisma` mirrors PRD Section 9 table-for-table. `prisma/seed.ts` seeds
-general + Check Am categories (with their checklist templates), platform settings
-(commission rates, fees, premium pricing), the super-admin account, and a system wallet
-that holds platform commission.
+`prisma/schema.prisma` mirrors PRD Section 9 table-for-table, plus P1/P2 additions:
+`recurringParentId` (booking chains), `PushSubscription`, `TrainingModule` +
+`ProviderTrainingProgress`, and `User.isEnterprise` / `User.googleId` /
+`User.dvaAccountNumber` etc. `prisma/seed.ts` seeds general + Check Am categories
+(with their checklist templates), platform settings (commission rates, fees, premium
+pricing), the super-admin account, and a system wallet that holds platform commission.
 
 ## Project structure
 
 Matches PRD Section 20: `app/(auth)`, `app/(dashboard)`, `app/admin`, `app/api/v1/*`,
-`components/`, `lib/` (one file per PRD-described module — `wallet.ts`, `paystack.ts`,
-`check-am.ts`, `subscription.ts`, `pdf.ts`, etc.), `prisma/`.
+`components/`, `lib/` (one file per module — `wallet.ts`, `paystack.ts`, `matching.ts`,
+`recurring.ts`, `push.ts`, `google-oauth.ts`, `subscription.ts`, `pdf.ts`, etc.), `prisma/`.

@@ -50,6 +50,10 @@ export const submitReportSchema = z.object({
   overallAssessment: z.string().optional(),
 });
 
+export const bulkGeneralRequestSchema = z.object({
+  items: z.array(createGeneralRequestSchema).min(2, "Use the single-request form for one booking").max(50),
+});
+
 export const raiseDisputeSchema = z.object({
   reason: z.string().min(10, "Please describe the issue"),
   evidenceUrls: z.array(z.string().url()).max(5).default([]),

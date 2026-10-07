@@ -22,7 +22,8 @@ export async function GET(req: NextRequest) {
         : {},
       select: {
         id: true, fullName: true, email: true, phone: true, membershipTier: true,
-        isProviderActive: true, providerVerified: true, isSuspended: true, isAdmin: true, createdAt: true,
+        isProviderActive: true, providerVerified: true, isSuspended: true, isAdmin: true,
+        isEnterprise: true, createdAt: true,
       },
       orderBy: { createdAt: "desc" },
       take: 200,

@@ -186,6 +186,10 @@ export default function ProviderProfilePage() {
       <Link href="/profile/provider/earnings" className="block text-primary-dark font-medium">
         View earnings & stats →
       </Link>
+
+      <Link href="/profile/provider/training" className="block text-primary-dark font-medium">
+        Training modules →
+      </Link>
     </div>
   );
 }

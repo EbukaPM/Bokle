@@ -5,12 +5,14 @@ import { useAuthStore } from "@/store/authStore";
 import { cn } from "@/lib/utils";
 import { api, ApiError } from "@/lib/fetcher";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export function RoleToggle() {
   const activeRole = useAuthStore((s) => s.activeRole);
   const setActiveRole = useAuthStore((s) => s.setActiveRole);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { t } = useTranslation();
 
   async function switchTo(role: "client" | "provider") {
     setError(null);
@@ -54,7 +56,7 @@ export function RoleToggle() {
             activeRole === "client" ? "bg-primary text-white" : "text-text-secondary"
           )}
         >
-          I need help
+          {t("role_client")}
         </button>
         <button
           role="tab"
@@ -65,7 +67,7 @@ export function RoleToggle() {
             activeRole === "provider" ? "bg-primary text-white" : "text-text-secondary"
           )}
         >
-          I offer help
+          {t("role_provider")}
         </button>
       </div>
       {error && (

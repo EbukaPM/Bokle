@@ -1,0 +1,12 @@
+{
+  "name": "Bokle",
+  "short_name": "Bokle",
+  "description": "Community services & verification marketplace",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#F4F8F7",
+  "theme_color": "#1A8C6F",
+  "icons": [
+    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

@@ -9,6 +9,11 @@ export const metadata: Metadata = {
   title: "Bokle — Community Services & Verification",
   description:
     "Bokle connects you with trusted, verified local providers for everyday help — and lets you dispatch a verified checker anywhere in Nigeria with Help Me Check Am.",
+  manifest: "/manifest.json",
+};
+
+export const viewport = {
+  themeColor: "#1A8C6F",
 };
 
 const themeInitScript = `

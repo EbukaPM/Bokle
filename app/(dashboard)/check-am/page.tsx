@@ -10,6 +10,7 @@ import { Select } from "@/components/ui/Select";
 import { StatusBadge } from "@/components/ui/Badge";
 import { api } from "@/lib/fetcher";
 import { formatDate, formatNaira } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { ServiceRequest, ServiceCategory } from "@prisma/client";
 
 type RequestWithReport = ServiceRequest & {
@@ -22,6 +23,7 @@ type View = "all" | "reports";
 export default function CheckAmPage() {
   const user = useAuthStore((s) => s.user);
   const isPremium = user?.membershipTier === "premium";
+  const { t } = useTranslation();
   const [view, setView] = useState<View>("all");
   const [categoryId, setCategoryId] = useState("");
 
@@ -51,7 +53,7 @@ export default function CheckAmPage() {
         <div className="inline-flex rounded-full bg-premium-light p-4 mb-4">
           <Lock className="h-8 w-8 text-premium-dark" aria-hidden="true" />
         </div>
-        <h1 className="text-2xl font-bold text-text-primary">Help Me Check Am is a Premium feature</h1>
+        <h1 className="text-2xl font-bold text-text-primary">{t("check_am_premium_notice")}</h1>
         <p className="text-text-secondary mt-2">
           Dispatch a verified local Bokle user to physically check a car, property, person, or site anywhere in
           Nigeria — and get a structured, photo-backed report back. Upgrade to unlock it.
@@ -69,7 +71,7 @@ export default function CheckAmPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-premium-dark">Help Me Check Am</h1>
+        <h1 className="text-2xl font-bold text-premium-dark">{t("check_am_title")}</h1>
         <Link
           href="/check-am/new"
           className="inline-flex items-center gap-1.5 rounded-lg bg-premium px-4 py-2 text-sm font-medium text-white hover:bg-premium-dark"

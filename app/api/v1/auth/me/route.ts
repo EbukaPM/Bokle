@@ -22,6 +22,7 @@ export async function GET() {
         providerVerified: user.providerVerified,
         isAdmin: user.isAdmin,
         isSuperAdmin: user.isSuperAdmin,
+        isEnterprise: user.isEnterprise,
       },
     });
   } catch (err) {

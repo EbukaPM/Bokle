@@ -2,16 +2,18 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Plus, Layers } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { StatusBadge } from "@/components/ui/Badge";
 import { api } from "@/lib/fetcher";
 import { formatDate, formatNaira } from "@/lib/utils";
+import { useAuthStore } from "@/store/authStore";
 import type { ServiceRequest, ServiceCategory } from "@prisma/client";
 
 type RequestWithCategory = ServiceRequest & { category: ServiceCategory };
 
 export default function RequestsPage() {
+  const user = useAuthStore((s) => s.user);
   const { data: requests, isLoading } = useQuery({
     queryKey: ["requests", "general"],
     queryFn: () =>
@@ -22,12 +24,22 @@ export default function RequestsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-text-primary">My Requests</h1>
-        <Link
-          href="/requests/new"
-          className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
-        >
-          <Plus className="h-4 w-4" aria-hidden="true" /> New request
-        </Link>
+        <div className="flex gap-2">
+          {user?.isEnterprise && (
+            <Link
+              href="/requests/bulk"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-primary-muted bg-primary-light px-4 py-2 text-sm font-medium text-primary-dark hover:bg-primary-muted/40"
+            >
+              <Layers className="h-4 w-4" aria-hidden="true" /> Bulk booking
+            </Link>
+          )}
+          <Link
+            href="/requests/new"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-dark"
+          >
+            <Plus className="h-4 w-4" aria-hidden="true" /> New request
+          </Link>
+        </div>
       </div>
 
       {isLoading && <p className="text-text-secondary">Loading…</p>}

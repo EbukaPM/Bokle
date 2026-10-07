@@ -10,6 +10,7 @@ import { Select } from "@/components/ui/Select";
 import { Modal } from "@/components/ui/Modal";
 import { api, ApiError } from "@/lib/fetcher";
 import { formatNaira, formatDateTime } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { Wallet, WalletTransaction, BankAccount } from "@prisma/client";
 
 const TX_LABELS: Record<string, string> = {
@@ -26,6 +27,7 @@ const TX_LABELS: Record<string, string> = {
 
 export default function WalletPage() {
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const [topUpOpen, setTopUpOpen] = useState(false);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [bankTransferOpen, setBankTransferOpen] = useState(false);
@@ -119,7 +121,7 @@ export default function WalletPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         <Card>
           <CardContent>
-            <p className="text-sm text-text-secondary">Available balance</p>
+            <p className="text-sm text-text-secondary">{t("available_balance")}</p>
             <p className="text-3xl font-bold text-primary-dark mt-1">
               {wallet ? formatNaira(wallet.availableBalance.toString()) : "—"}
             </p>
@@ -139,10 +141,10 @@ export default function WalletPage() {
 
       <div className="flex gap-3">
         <Button onClick={() => setTopUpOpen(true)} className="flex-1">
-          <Plus className="h-4 w-4" /> Top Up
+          <Plus className="h-4 w-4" /> {t("top_up")}
         </Button>
         <Button variant="secondary" onClick={() => setWithdrawOpen(true)} className="flex-1">
-          <Minus className="h-4 w-4" /> Withdraw
+          <Minus className="h-4 w-4" /> {t("withdraw")}
         </Button>
         <Button variant="ghost" onClick={() => setBankTransferOpen(true)} className="flex-1">
           <Landmark className="h-4 w-4" /> Bank Transfer

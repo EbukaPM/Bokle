@@ -4,27 +4,30 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, ClipboardList, Sparkles, Wallet, User, Briefcase, FileText, TrendingUp } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
+import { useTranslation } from "@/hooks/useTranslation";
 import { cn } from "@/lib/utils";
+import type { TranslationKey } from "@/lib/i18n/translations";
 
-const CLIENT_ITEMS = [
-  { href: "/dashboard", label: "Home", icon: Home },
-  { href: "/requests", label: "Requests", icon: ClipboardList },
-  { href: "/check-am", label: "Check Am", icon: Sparkles },
-  { href: "/wallet", label: "Wallet", icon: Wallet },
-  { href: "/profile", label: "Profile", icon: User },
+const CLIENT_ITEMS: { href: string; key: TranslationKey; icon: typeof Home }[] = [
+  { href: "/dashboard", key: "nav_home", icon: Home },
+  { href: "/requests", key: "nav_requests", icon: ClipboardList },
+  { href: "/check-am", key: "nav_check_am", icon: Sparkles },
+  { href: "/wallet", key: "nav_wallet", icon: Wallet },
+  { href: "/profile", key: "nav_profile", icon: User },
 ];
 
-const PROVIDER_ITEMS = [
-  { href: "/dashboard", label: "Dashboard", icon: Home },
-  { href: "/jobs", label: "Jobs", icon: Briefcase },
-  { href: "/jobs?tab=reports", label: "Reports", icon: FileText },
-  { href: "/wallet", label: "Earnings", icon: TrendingUp },
-  { href: "/profile", label: "Profile", icon: User },
+const PROVIDER_ITEMS: { href: string; key: TranslationKey; icon: typeof Home }[] = [
+  { href: "/dashboard", key: "nav_dashboard", icon: Home },
+  { href: "/jobs", key: "nav_jobs", icon: Briefcase },
+  { href: "/jobs?tab=reports", key: "nav_reports", icon: FileText },
+  { href: "/wallet", key: "nav_earnings", icon: TrendingUp },
+  { href: "/profile", key: "nav_profile", icon: User },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
   const activeRole = useAuthStore((s) => s.activeRole);
+  const { t } = useTranslation();
   const items = activeRole === "provider" ? PROVIDER_ITEMS : CLIENT_ITEMS;
 
   return (
@@ -38,7 +41,7 @@ export function BottomNav() {
         const Icon = item.icon;
         return (
           <Link
-            key={item.label}
+            key={item.key}
             href={item.href}
             className={cn(
               "flex flex-1 flex-col items-center gap-0.5 py-2 min-h-[44px]",
@@ -47,7 +50,7 @@ export function BottomNav() {
             aria-current={isActive ? "page" : undefined}
           >
             <Icon className="h-5 w-5" aria-hidden="true" />
-            <span className="text-[11px]">{item.label}</span>
+            <span className="text-[11px]">{t(item.key)}</span>
           </Link>
         );
       })}
